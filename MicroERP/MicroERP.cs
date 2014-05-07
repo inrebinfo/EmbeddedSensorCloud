@@ -19,6 +19,9 @@ namespace MicroERP
         private DBCon _dbCon = new DBCon();
         private CWebResponse _response;
 
+
+        int toadd;
+
         #region ContactInformation
 
         private string _type;
@@ -55,11 +58,31 @@ namespace MicroERP
                 {
                     foreach (KeyValuePair<string, string> entry2 in _url.WebParameters)
                     {
-                        if (entry2.Key == "searchstring")
+                        if (entry2.Key == "contact")
                         {
                             _searchString = entry2.Value.ToString();
 
-                            List<ContactObject> resultContact = new List<ContactObject>(); ;
+                            List<ContactObject> resultContact = new List<ContactObject>();
+
+                            resultContact = _dbCon.SearchContact(_searchString);
+
+                            sendResponse(resultContact);
+                        }
+                        else if (entry2.Key == "company")
+                        {
+                            _searchString = entry2.Value.ToString();
+
+                            List<ContactObject> resultContact = new List<ContactObject>();
+
+                            resultContact = _dbCon.SearchCompany(_searchString);
+
+                            sendResponse(resultContact);
+                        }
+                        else if (entry2.Key == "invoice")
+                        {
+                            _searchString = entry2.Value.ToString();
+
+                            List<ContactObject> resultContact = new List<ContactObject>();
 
                             resultContact = _dbCon.SearchContact(_searchString);
 
@@ -69,21 +92,86 @@ namespace MicroERP
                 }
                 else if (entry.Key == "mode" && entry.Value == "insert")
                 {
-                    //TODO: insert
+                    foreach (KeyValuePair<string, string> entry2 in _url.WebParameters)
+                    {
+                        if (entry2.Key == "contact")
+                        {
+                            _searchString = entry2.Value.ToString();
+
+                            foreach (KeyValuePair<string, string> entry3 in _url.WebParameters)
+                            {
+                                if (entry3.Key == "toadd")
+                                {
+                                    toadd = Convert.ToInt32(entry3.Value);
+                                }
+                            }
+
+                            if (toadd == 1)
+                            {
+                                _searchString += "=";
+
+                            }
+                            else if (toadd == 2)
+                            {
+                                _searchString += "==";
+                            }
+
+                            byte[] arr = Convert.FromBase64String(_searchString);
+                            _searchString = System.Text.Encoding.UTF8.GetString(arr);
+
+                            _dbCon.InsertContact(_searchString);
+                        }
+                        else if (entry2.Key == "invoice")
+                        {
+                            _searchString = Convert.FromBase64String(entry2.Value + "==").ToString();
+
+                            List<ContactObject> resultContact = new List<ContactObject>();
+
+                            resultContact = _dbCon.SearchCompany(_searchString);
+
+                            sendResponse(resultContact);
+                        }
+                    }
                 }
-                else if (entry.Key == "mode" && entry.Value == "edit")
+                else if (entry.Key == "mode" && entry.Value == "update")
                 {
-                    //TODO: edit
+
+                    foreach (KeyValuePair<string, string> entry2 in _url.WebParameters)
+                    {
+
+                        _searchString = entry2.Value.ToString();
+
+                        foreach (KeyValuePair<string, string> entry3 in _url.WebParameters)
+                        {
+                            if (entry3.Key == "toadd")
+                            {
+                                toadd = Convert.ToInt32(entry3.Value);
+                            }
+                        }
+
+
+                        if (entry2.Key == "contact")
+                        {
+                            _searchString = entry2.Value;
+
+                            if (toadd == 1)
+                            {
+                                _searchString += "=";
+
+                            }
+                            else if (toadd == 2)
+                            {
+                                _searchString += "==";
+                            }
+
+                            byte[] arr = Convert.FromBase64String(_searchString);
+                            _searchString = System.Text.Encoding.UTF8.GetString(arr);
+
+                            _dbCon.UpdateContact(_searchString);
+                        }
+                    }
                 }
             }
-
-            /*
-            int size = ASCIIEncoding.ASCII.GetByteCount(html);
-            CWebResponse response = new CWebResponse(_writer);
-            response.ContentLength = html.Length;
-            response.ContentType = "text/html";
-            response.WriteResponse(html);
-            */
         }
 
 
@@ -112,9 +200,10 @@ namespace MicroERP
             int size = ASCIIEncoding.ASCII.GetByteCount(response);
 
             _response.ContentType = "text/xml";
-            _response.ContentLength = size*2;
+            _response.ContentLength = size * 2;
             _response.WriteResponse(response);
         }
+
 
         //wpf ding schickt anfrage über verschiedene layer mittels webrequest
         //url schaut so aus: http://localhost:8080/MicroERP.html?mode=insert
@@ -152,6 +241,6 @@ namespace MicroERP
             {
                 return this._pluginName;
             }
-        }  
+        }
     }
 }

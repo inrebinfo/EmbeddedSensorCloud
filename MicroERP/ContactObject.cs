@@ -19,6 +19,8 @@ namespace MicroERP
         public string NameToSearch { get; set; }
 
         //Person
+        [XmlElement(ElementName = "ID")]
+        public string ID { get; set; }
         [XmlElement(ElementName = "Titel")]
         public string Titel { get; set; }
         [XmlElement(ElementName = "Vorname")]
@@ -41,5 +43,8 @@ namespace MicroERP
         public string Firmenname { get; set; }
         [XmlElement(ElementName = "UID")]
         public string UID { get; set; }
+
+        [XmlElement(ElementName = "FK_Kontakt")]
+        public string FK_Kontakt { get; set; }
     }
 }
