@@ -31,7 +31,12 @@ namespace MicroERP
             string encSearchString = WebUtility.UrlDecode(searchstring);
             List<ContactObject> contacts = new List<ContactObject>();
 
-            string searchQuery = @"SELECT id, titel, vorname, nachname, suffix, geburtsdatum, firmenname, uid, strasse, plz, ort, fk_kontakt FROM MicroERP.dbo.Kontakte WHERE Vorname LIKE '%" + encSearchString + "%' OR Nachname LIKE '%" + encSearchString + "%' OR Firmenname LIKE '%" + encSearchString + "%'";
+            //string searchQuery = @"SELECT id, titel, vorname, nachname, suffix, geburtsdatum, firmenname, uid, strasse, plz, ort, fk_kontakt FROM MicroERP.dbo.Kontakte WHERE Vorname LIKE '%" + encSearchString + "%' OR Nachname LIKE '%" + encSearchString + "%' OR Firmenname LIKE '%" + encSearchString + "%'";
+
+            //select * from Kontakte a left join Kontakte b on a.fk_kontakt = b.id where a.vorname like '%grub%' or a.nachname like '%grub%' or a.firmenname like '%grub%'
+            string searchQuery = @"SELECT a.id, a.titel, a.vorname, a.nachname, a.suffix, a.geburtsdatum, b.firmenname, b.uid, a.strasse, a.plz, a.ort, a.fk_kontakt FROM MicroERP.dbo.Kontakte a
+            left join Kontakte b on a.fk_kontakt = b.id
+            WHERE a.vorname LIKE '%" + encSearchString + "%' OR a.nachname LIKE '%" + encSearchString + "%' OR a.firmenname LIKE '%" + encSearchString + "%'";
 
             using (SqlConnection con = new SqlConnection(_ConnectionString))
             {
