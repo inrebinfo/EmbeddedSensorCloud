@@ -34,9 +34,15 @@ namespace MicroERP
             //string searchQuery = @"SELECT id, titel, vorname, nachname, suffix, geburtsdatum, firmenname, uid, strasse, plz, ort, fk_kontakt FROM MicroERP.dbo.Kontakte WHERE Vorname LIKE '%" + encSearchString + "%' OR Nachname LIKE '%" + encSearchString + "%' OR Firmenname LIKE '%" + encSearchString + "%'";
 
             //select * from Kontakte a left join Kontakte b on a.fk_kontakt = b.id where a.vorname like '%grub%' or a.nachname like '%grub%' or a.firmenname like '%grub%'
-            string searchQuery = @"SELECT a.id, a.titel, a.vorname, a.nachname, a.suffix, a.geburtsdatum, b.firmenname, b.uid, a.strasse, a.plz, a.ort, a.fk_kontakt FROM MicroERP.dbo.Kontakte a
+            /*string searchQuery = @"SELECT a.id, a.titel, a.vorname, a.nachname, a.suffix, a.geburtsdatum, b.firmenname, b.uid, a.strasse, a.plz, a.ort, a.fk_kontakt FROM MicroERP.dbo.Kontakte a
             left join Kontakte b on a.fk_kontakt = b.id
-            WHERE a.vorname LIKE '%" + encSearchString + "%' OR a.nachname LIKE '%" + encSearchString + "%' OR a.firmenname LIKE '%" + encSearchString + "%'";
+            WHERE a.vorname LIKE '%" + encSearchString + "%' OR a.nachname LIKE '%" + encSearchString + "%' OR a.firmenname LIKE '%" + encSearchString + "%'";*/
+
+            /*string searchQuery = @"SELECT a.id, a.titel, a.vorname, a.nachname, a.suffix, a.geburtsdatum, a.firmenname, a.uid, a.strasse, a.plz, a.ort, a.fk_kontakt FROM MicroERP.dbo.Kontakte a
+            left join Kontakte b on a.fk_kontakt = b.id
+            WHERE a.vorname LIKE '%" + encSearchString + "%' OR a.nachname LIKE '%" + encSearchString + "%' OR a.firmenname LIKE '%" + encSearchString + "%'";*/
+
+            string searchQuery = "SELECT * FROM Kontakte WHERE vorname LIKE '%" + encSearchString + "%' OR nachname LIKE '%" + encSearchString + "%' OR firmenname LIKE '%" + encSearchString + "%'";
 
             using (SqlConnection con = new SqlConnection(_ConnectionString))
             {
@@ -51,22 +57,45 @@ namespace MicroERP
                     while (reader.Read())
                     {
                         ContactObject resultContact = new ContactObject();
-                        resultContact.ID = reader["id"].ToString();
-                        resultContact.Titel = reader["titel"].ToString();
-                        resultContact.Vorname = reader["vorname"].ToString();
-                        resultContact.Nachname = reader["nachname"].ToString();
-                        resultContact.Suffix = reader["suffix"].ToString();
-                        resultContact.Geburtsdatum = reader["geburtsdatum"].ToString();
-                        resultContact.Firmenname = reader["firmenname"].ToString();
-                        resultContact.UID = reader["uid"].ToString();
-                        resultContact.Strasse = reader["strasse"].ToString();
-                        resultContact.PLZ = reader["plz"].ToString();
-                        resultContact.Ort = reader["ort"].ToString();
+                        resultContact.ID = Convert.ToString(reader["id"] as decimal? ?? default(decimal));
+                        resultContact.Titel = reader["titel"] as string;
+                        resultContact.Vorname = reader["vorname"] as string;
+                        resultContact.Nachname = reader["nachname"] as string;
+                        resultContact.Suffix = reader["suffix"] as string;
+                        resultContact.Geburtsdatum = reader["geburtsdatum"] as string;
+                        resultContact.Firmenname = reader["firmenname"] as string;
+                        resultContact.UID = reader["uid"] as string;
+                        resultContact.Strasse = reader["strasse"] as string;
+                        resultContact.PLZ = reader["plz"] as string;
+                        resultContact.Ort = reader["ort"] as string;
+
+                        if (reader["fk_kontakt"] != DBNull.Value)
+                        {
+                            using (SqlConnection con2 = new SqlConnection(_ConnectionString))
+                            {
+                                con2.Open();
+                                string searchQuery2 = "select * from Kontakte where id = '" + reader["fk_kontakt"] + "'";
+
+                                SqlCommand cmd2 = new SqlCommand(searchQuery2, con2);
+
+                                SqlDataReader reader2 = cmd2.ExecuteReader();
+
+                                while (reader2.Read())
+                                {
+                                    resultContact.FK_Kontakt = Convert.ToString(reader2["id"] as decimal? ?? default(decimal));
+                                    resultContact.Firmenname = reader2["firmenname"] as string;
+                                    resultContact.UID = reader2["uid"] as string;
+                                }
+
+                                con2.Close();
+                            }
+                        }
 
                         contacts.Add(resultContact);
                     }
                 }
-                catch { }
+                catch(Exception ex)
+                { }
 
                 con.Close();
             }
