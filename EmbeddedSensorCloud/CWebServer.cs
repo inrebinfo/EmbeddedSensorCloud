@@ -76,6 +76,7 @@ namespace EmbeddedSensorCloud
                     Console.WriteLine("requested plugin: " + plug.PluginName);
 
                     plug.Load(WriterForClient, url);
+                    
                     plug.doSomething();
                 }
             }

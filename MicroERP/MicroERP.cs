@@ -12,13 +12,16 @@ namespace MicroERP
 {
     public class MicroERP : IPlugin
     {
+
+        //DAS IS DIE FASSADE LOL
+
         private string _pluginName = "MicroERP";
         private StreamWriter _writer;
         private CWebURL _url;
 
         private DBCon _dbCon = new DBCon();
         private CWebResponse _response;
-
+        
 
         int toadd;
 
@@ -48,6 +51,7 @@ namespace MicroERP
             _writer = writer;
             _url = url;
             _response = new CWebResponse(_writer);
+            DALFactory.dataAccesObj = new DBCon();
         }
 
         public void doSomething()
@@ -64,9 +68,9 @@ namespace MicroERP
 
                             List<ContactObject> resultContact = new List<ContactObject>();
 
-                            resultContact = _dbCon.SearchContact(_searchString);
+                            resultContact = BusinessLayer.blSearchContacts(_searchString);
 
-                            sendResponse(resultContact);
+                            sendResponse(resultContact, "contact");
                         }
                         else if (entry2.Key == "company")
                         {
@@ -74,19 +78,30 @@ namespace MicroERP
 
                             List<ContactObject> resultContact = new List<ContactObject>();
 
-                            resultContact = _dbCon.SearchCompany(_searchString);
+                            resultContact = BusinessLayer.blSearchCompany(_searchString);
 
-                            sendResponse(resultContact);
+                            sendResponse(resultContact, "contact");
                         }
                         else if (entry2.Key == "invoice")
                         {
                             _searchString = entry2.Value.ToString();
 
-                            List<ContactObject> resultContact = new List<ContactObject>();
+                            List<InvoiceObject> resultContact = new List<InvoiceObject>();
 
-                            resultContact = _dbCon.SearchContact(_searchString);
+                            resultContact = BusinessLayer.blSearchInvoice(_searchString);
 
-                            sendResponse(resultContact);
+                            sendResponse(resultContact, "invoice");
+                        }
+
+                        else if (entry2.Key == "invoicelines")
+                        {
+                            _searchString = entry2.Value.ToString();
+
+                            List<InvoiceLineObject> resultContact = new List<InvoiceLineObject>();
+
+                            resultContact = BusinessLayer.blSearchInvoiceLines(_searchString);
+
+                            sendResponse(resultContact, "invoicelines");
                         }
                     }
                 }
@@ -123,13 +138,30 @@ namespace MicroERP
                         }
                         else if (entry2.Key == "invoice")
                         {
-                            _searchString = Convert.FromBase64String(entry2.Value + "==").ToString();
+                            _searchString = entry2.Value.ToString();
 
-                            List<ContactObject> resultContact = new List<ContactObject>();
+                            foreach (KeyValuePair<string, string> entry3 in _url.WebParameters)
+                            {
+                                if (entry3.Key == "toadd")
+                                {
+                                    toadd = Convert.ToInt32(entry3.Value);
+                                }
+                            }
 
-                            resultContact = _dbCon.SearchCompany(_searchString);
+                            if (toadd == 1)
+                            {
+                                _searchString += "=";
 
-                            sendResponse(resultContact);
+                            }
+                            else if (toadd == 2)
+                            {
+                                _searchString += "==";
+                            }
+
+                            byte[] arr = Convert.FromBase64String(_searchString);
+                            _searchString = System.Text.Encoding.UTF8.GetString(arr);
+
+                            _dbCon.InsertInvoice(_searchString);
                         }
                     }
                 }
@@ -176,9 +208,26 @@ namespace MicroERP
 
 
         //public void sendResponse(ContactObject contact)
-        public void sendResponse(List<ContactObject> contacts)
+        public void sendResponse(object contacts, string type)
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(List<ContactObject>));
+            XmlSerializer serializer;
+
+            if (type == "contact")
+            {
+                serializer = new XmlSerializer(typeof(List<ContactObject>));
+            }
+            else if (type == "invoice")
+            {
+                serializer = new XmlSerializer(typeof(List<InvoiceObject>));
+            }
+            else if (type == "invoicelines")
+            {
+                serializer = new XmlSerializer(typeof(List<InvoiceLineObject>));
+            }
+            else
+            {
+                serializer = new XmlSerializer(typeof(List<ContactObject>));
+            }
 
             byte[] respBytes;
 
@@ -218,15 +267,6 @@ namespace MicroERP
         //bei ?mode=insert und ?mode=edit irgendein true oder sonst was zurückschicken, das muss im wpfding dann gemacht werden
 
         //fassade ist eigentlich CWebRequest, muss noch angepasst werden an das Beispiel hier (glaub ich) 
-
-
-
-
-
-
-
-
-
 
 
 

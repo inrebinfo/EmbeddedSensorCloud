@@ -15,7 +15,7 @@ using EmbeddedSensorCloud;
 
 namespace MicroERP
 {
-    public class DBCon
+    public class DBCon : IDatabase
     {
         private SqlConnection _SQLCon;
         private string _ConnectionString;
@@ -24,6 +24,11 @@ namespace MicroERP
         {
             //_SQLCon = new SqlConnection(@"Data Source=.\SqlExpress;Initial Catalog=MicroERP;Integrated Security=true;");
             _ConnectionString = @"Data Source=.\SQLEXPRESS;Initial Catalog=MicroERP;Integrated Security=true;";
+        }
+
+        public object realSearchContact(string searchstring)
+        {
+            return SearchContact(searchstring);
         }
 
         public List<ContactObject> SearchContact(string searchstring)
@@ -94,7 +99,7 @@ namespace MicroERP
                         contacts.Add(resultContact);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 { }
 
                 con.Close();
@@ -103,13 +108,18 @@ namespace MicroERP
             return contacts;
         }
 
+        public object realSearchCompany(string searchstring)
+        {
+            return SearchCompany(searchstring);
+        }
+
         public List<ContactObject> SearchCompany(string searchstring)
         {
             string encSearchString = WebUtility.UrlDecode(searchstring);
             List<ContactObject> contacts = new List<ContactObject>();
 
             string searchQuery = @"SELECT id, firmenname, uid, strasse, plz, ort FROM MicroERP.dbo.Kontakte WHERE Firmenname LIKE '%" + encSearchString + "%'";
-            
+
             using (SqlConnection con = new SqlConnection(_ConnectionString))
             {
                 con.Open();
@@ -136,8 +146,131 @@ namespace MicroERP
                 catch { }
                 con.Close();
             }
-            
+
             return contacts;
+        }
+
+        public object realSearchInvoice(string searchstring)
+        {
+            return SearchInvoice(searchstring);
+        }
+
+        public List<InvoiceObject> SearchInvoice(string searchstring)
+        {
+            string encSearchString = WebUtility.UrlDecode(searchstring);
+
+
+            //kunde,datevon,datebis,preisvon,preisbis
+            string[] parts = encSearchString.Split(',');
+
+            List<InvoiceObject> invoices = new List<InvoiceObject>();
+
+
+
+            string searchQuery = "select * from Rechnungen WHERE id in (Select id from Kontakte Where Vorname like '%" + parts[0] + "%' OR Nachname like '%" + parts[0] + "%' OR Firmenname like '%" + parts[0] + "%') OR datum BETWEEN '" + parts[1] + "' and '" + parts[2] + "' OR sum BETWEEN '" + parts[3] + "' and '" + parts[4] + "'";
+
+            using (SqlConnection con = new SqlConnection(_ConnectionString))
+            {
+                con.Open();
+
+                try
+                {
+                    SqlCommand cmd = new SqlCommand(searchQuery, con);
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        InvoiceObject resultInvoice = new InvoiceObject();
+                        /*resultContact.ID = Convert.ToString(reader["id"] as decimal? ?? default(decimal));
+                        resultContact.Titel = reader["titel"] as string;
+                        resultContact.Vorname = reader["vorname"] as string;
+                        resultContact.Nachname = reader["nachname"] as string;
+                        resultContact.Suffix = reader["suffix"] as string;
+                        resultContact.Geburtsdatum = reader["geburtsdatum"] as string;
+                        resultContact.Firmenname = reader["firmenname"] as string;
+                        resultContact.UID = reader["uid"] as string;
+                        resultContact.Strasse = reader["strasse"] as string;
+                        resultContact.PLZ = reader["plz"] as string;
+                        resultContact.Ort = reader["ort"] as string;*/
+
+                        resultInvoice.ID = Convert.ToString(reader["id"] as decimal? ?? default(decimal));
+                        resultInvoice.ErstellungsDatum = reader["datum"] as DateTime? ?? default(DateTime);
+                        resultInvoice.FaelligkeitsDatum = reader["faellig"] as DateTime? ?? default(DateTime);
+                        resultInvoice.Kommentar = Convert.ToString(reader["Kommentar"] as string);
+                        resultInvoice.Nachricht = Convert.ToString(reader["Nachricht"] as string);
+
+                        using (SqlConnection con3 = new SqlConnection(_ConnectionString))
+                        {
+                            con3.Open();
+                            string searchQuery3 = "select * from Kontakte where id = '" + reader["fk_kontakt"] + "'";
+
+                            SqlCommand cmd3 = new SqlCommand(searchQuery3, con3);
+
+                            SqlDataReader reader3 = cmd3.ExecuteReader();
+
+                            while (reader3.Read())
+                            {
+                                resultInvoice.FK_Kontakt = reader3["vorname"] + ";" + reader3["nachname"] + ";" + reader3["firmenname"];
+                            }
+
+                            con3.Close();
+                        }
+
+                        invoices.Add(resultInvoice);
+                    }
+                }
+                catch (Exception ex)
+                { }
+
+                con.Close();
+            }
+
+            return invoices;
+        }
+
+        public object realSearchInvoiceLines(string searchstring)
+        {
+            return SearchInvoiceLines(searchstring);
+        }
+
+        public List<InvoiceLineObject> SearchInvoiceLines(string searchstring)
+        {
+            string encSearchString = WebUtility.UrlDecode(searchstring);
+
+            List<InvoiceLineObject> invoiceLines = new List<InvoiceLineObject>();
+
+            string searchQuery = "select * from Rechnungszeile WHERE fk_rechnung = '" + encSearchString + "'";
+
+            using (SqlConnection con = new SqlConnection(_ConnectionString))
+            {
+                con.Open();
+
+                try
+                {
+                    SqlCommand cmd = new SqlCommand(searchQuery, con);
+
+                    SqlDataReader reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        InvoiceLineObject resultInvoiceLine = new InvoiceLineObject();
+
+                        resultInvoiceLine.Menge = Convert.ToString(reader["menge"] as decimal? ?? default(decimal));
+                        resultInvoiceLine.Stkpreis = Convert.ToString(reader["stkpreis"] as double? ?? default(double));
+                        resultInvoiceLine.UST = Convert.ToString(reader["ust"] as decimal? ?? default(decimal));
+                        resultInvoiceLine.FK_Rechnung = Convert.ToString(reader["fk_rechnung"] as decimal? ?? default(decimal)); ;
+
+                        invoiceLines.Add(resultInvoiceLine);
+                    }
+                }
+                catch (Exception ex)
+                { }
+
+                con.Close();
+            }
+
+            return invoiceLines;
         }
 
         public void UpdateContact(string searchstring)
@@ -167,7 +300,7 @@ namespace MicroERP
             fk_kontakt = '" + resultContact.FK_Kontakt + @"'
             WHERE id = '" + resultContact.ID + "'";
 
-            
+
             using (SqlConnection con = new SqlConnection(_ConnectionString))
             {
                 con.Open();
@@ -216,6 +349,62 @@ namespace MicroERP
                 catch { }
 
                 con.Close();
+            }
+        }
+
+        public void InsertInvoice(string searchstring)
+        {
+            string encSearchString = searchstring;
+
+            InvoiceObject resultInvoice = new InvoiceObject();
+
+            var serializer = new XmlSerializer(typeof(InvoiceObject), new XmlRootAttribute("InvoiceObject"));
+            using (var stringReader = new StringReader(encSearchString))
+            using (var reader2 = XmlReader.Create(stringReader))
+            {
+                var result = (InvoiceObject)serializer.Deserialize(reader2);
+                resultInvoice = result;
+            }
+
+            string searchQuery = @"INSERT INTO MicroERP.dbo.Rechnungen
+            (datum, faellig, kommentar, nachricht, fk_kontakt, sum) VALUES
+            ('" + resultInvoice.ErstellungsDatum + "', '" + resultInvoice.FaelligkeitsDatum + "', '" + resultInvoice.Kommentar + "', '" + resultInvoice.Nachricht + "', '" + resultInvoice.FK_Kontakt + "', '" + resultInvoice.Summe + "')";
+
+
+            using (SqlConnection con = new SqlConnection(_ConnectionString))
+            {
+                con.Open();
+
+                try
+                {
+                    SqlCommand cmd = new SqlCommand(searchQuery, con);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch { }
+
+                con.Close();
+            }
+
+            using (SqlConnection con2 = new SqlConnection(_ConnectionString))
+            {
+                con2.Open();
+
+                try
+                {
+                    foreach (InvoiceLineObject obj in resultInvoice.InvoiceLines)
+                    {
+                        string insertString = @"INSERT INTO MicroERP.dbo.Rechnungszeile
+                            (menge, stkpreis, fk_rechnung, ust) VALUES
+                            ('" + obj.Menge + "', '" + obj.Stkpreis + "', (Select Max(id)+1 from Rechnungen), '" + obj.UST + "')";
+
+                        SqlCommand cmd = new SqlCommand(insertString, con2);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                catch { }
+
+                con2.Close();
             }
         }
     }

@@ -39,8 +39,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BusinessLayer.cs" />
     <Compile Include="ContactObject.cs" />
+    <Compile Include="DALFactory.cs" />
     <Compile Include="DBCon.cs" />
+    <Compile Include="FakeDAL.cs" />
+    <Compile Include="IDatabase.cs" />
+    <Compile Include="InvoiceLineObject.cs" />
+    <Compile Include="InvoiceObject.cs" />
     <Compile Include="MicroERP.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
