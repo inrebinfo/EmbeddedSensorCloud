@@ -46,5 +46,32 @@ namespace MicroERP
 
         [XmlElement(ElementName = "FK_Kontakt")]
         public string FK_Kontakt { get; set; }
+
+
+
+        public override bool Equals(object obj)
+        {
+            ContactObject other = obj as ContactObject;
+
+            if (other == null)
+                return false;
+
+            if (object.ReferenceEquals(this, obj))
+                return true;
+
+            return
+            this.ID == other.ID &&
+            this.Titel == other.Titel &&
+            this.Vorname == other.Vorname &&
+            this.Nachname == other.Nachname &&
+            this.Suffix == other.Suffix &&
+            this.Geburtsdatum == other.Geburtsdatum &&
+            this.Strasse == other.Strasse &&
+            this.PLZ == other.PLZ &&
+            this.Ort == other.Ort &&
+            this.Firmenname == other.Firmenname &&
+            this.UID == other.UID &&
+            this.FK_Kontakt == other.FK_Kontakt;
+        }
     }
 }

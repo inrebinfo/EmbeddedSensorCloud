@@ -29,5 +29,20 @@ namespace MicroERP
         {
             return dataAccesObj.realSearchInvoiceLines(param);
         }
+
+        public static void dalFacInsertContact(string param)
+        {
+            dataAccesObj.realInsertContact(param);
+        }
+
+        public static void dalFacUpdateContact(string param)
+        {
+            dataAccesObj.realUpdateContact(param);
+        }
+
+        public static void dalFacInsertInvoice(string param)
+        {
+            dataAccesObj.realInsertInvoice(param);
+        }
     }
 }

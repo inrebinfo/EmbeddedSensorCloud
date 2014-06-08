@@ -22,6 +22,8 @@ namespace MicroERP
         private DBCon _dbCon = new DBCon();
         private CWebResponse _response;
         
+        
+
 
         int toadd;
 
@@ -134,7 +136,8 @@ namespace MicroERP
                             byte[] arr = Convert.FromBase64String(_searchString);
                             _searchString = System.Text.Encoding.UTF8.GetString(arr);
 
-                            _dbCon.InsertContact(_searchString);
+                            //_dbCon.InsertContact(_searchString);
+                            BusinessLayer.blInsertContact(_searchString);
                         }
                         else if (entry2.Key == "invoice")
                         {
@@ -161,7 +164,8 @@ namespace MicroERP
                             byte[] arr = Convert.FromBase64String(_searchString);
                             _searchString = System.Text.Encoding.UTF8.GetString(arr);
 
-                            _dbCon.InsertInvoice(_searchString);
+                            //_dbCon.InsertInvoice(_searchString);
+                            BusinessLayer.blInsertInvoice(_searchString);
                         }
                     }
                 }
@@ -199,7 +203,8 @@ namespace MicroERP
                             byte[] arr = Convert.FromBase64String(_searchString);
                             _searchString = System.Text.Encoding.UTF8.GetString(arr);
 
-                            _dbCon.UpdateContact(_searchString);
+                            //_dbCon.UpdateContact(_searchString);
+                            BusinessLayer.blUpdateContact(_searchString);
                         }
                     }
                 }

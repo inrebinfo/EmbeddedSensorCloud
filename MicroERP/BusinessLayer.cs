@@ -38,5 +38,20 @@ namespace MicroERP
 
             return res;
         }
+
+        public static void blInsertContact(string param)
+        {
+            DALFactory.dalFacInsertContact(param);
+        }
+
+        public static void blUpdateContact(string param)
+        {
+            DALFactory.dalFacUpdateContact(param);
+        }
+
+        public static void blInsertInvoice(string param)
+        {
+            DALFactory.dalFacInsertInvoice(param);
+        }
     }
 }

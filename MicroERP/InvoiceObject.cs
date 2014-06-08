@@ -28,5 +28,25 @@ namespace MicroERP
         public string Summe { get; set; }
         [XmlElement(ElementName = "InvoiceLines")]
         public List<InvoiceLineObject> InvoiceLines { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            InvoiceObject other = obj as InvoiceObject;
+
+            if (other == null)
+                return false;
+
+            if (object.ReferenceEquals(this, obj))
+                return true;
+
+            return
+            this.ID == other.ID &&
+            this.ErstellungsDatum == other.ErstellungsDatum &&
+            this.FaelligkeitsDatum == other.FaelligkeitsDatum &&
+            this.Kommentar == other.Kommentar &&
+            this.Nachricht == other.Nachricht &&
+            this.FK_Kontakt == other.FK_Kontakt &&
+            this.Summe == other.Summe;
+        }
     }
 }

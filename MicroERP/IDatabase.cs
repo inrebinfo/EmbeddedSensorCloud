@@ -12,5 +12,8 @@ namespace MicroERP
         object realSearchCompany(string param);
         object realSearchInvoice(string param);
         object realSearchInvoiceLines(string param);
+        void realInsertContact(string param);
+        void realUpdateContact(string param);
+        void realInsertInvoice(string param);
     }
 }
